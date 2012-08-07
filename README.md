@@ -18,17 +18,17 @@ booklog と Twitter を連携しているユーザをフォローし、各ユー
 Amazon API を利用し、商品の asin から商品情報を取得。
 
 以下の情報を書いた amazon_id.txt が必要。
-1. associate tag
-2. aws access key 
-3. aws secret key
+1.  associate tag
+2.  aws access key 
+3.  aws secret key
 
 ### メソッド一覧
 #### ask(asin)
 商品 asin を受け取り、以下の情報を含むハッシュを返す。
-1. titile
-2. author
-3. date
-4. url
+1.  titile
+2.  author
+3.  date
+4.  url
 
 過去に取得した情報は log ファイルに吐き出すことで amazon に再問い合わせすることを回避。
 （api 制限があるのでできるだけ問い合わせ回数を節約したい。）
@@ -41,8 +41,8 @@ bot に積むようなので気長に待ってね。
 bitly api を利用して long_url を short_url へ変換。
 
 以下の情報を書いた bitly_id.txt が必要。
-- account
-- api key
+1.  account
+2.  api key
 
 ### メソッド一覧
 #### shorten(long_url)
@@ -61,11 +61,11 @@ twitter api を利用して色々する。
 （特殊な機能は増えていない。）
 
 以下の情報を書いた twitter_id.txt が必要。
-- twitter id
-- consumer key
-- consumer key (secret)
-- oauth token
-- oauth token (secret)
+1.  twitter id
+2.  consumer key
+3.  consumer key (secret)
+4.  oauth token
+5.  oauth token (secret)
 
 ### メソッド一覧
 #### 
