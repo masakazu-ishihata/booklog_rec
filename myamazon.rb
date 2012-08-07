@@ -14,7 +14,7 @@ class MyAmazon
   #### new ####
   def initialize
     # load keys
-    ary = open("amazon_id.txt").read.split("\n")
+    ary = open("./ids/amazon_id.txt").read.split("\n")
     @atag = ary[0]
     @akey = ary[1]
     @skey = ary[2]

@@ -14,7 +14,7 @@ class MyBitly
   #### new ####
   def initialize
     # load account & api_key
-    ary = open("bitly_id.txt").read.split("\n")
+    ary = open("./ids/bitly_id.txt").read.split("\n")
     @account = ary[0] # bitly account
     @api_key = ary[1] # bitly api key
   end

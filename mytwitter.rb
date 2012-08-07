@@ -16,7 +16,7 @@ class MyTwitter
     @posted = "posted.txt"
 
     # load id
-    ary = open("twitter_id.txt").read.split("\n")
+    ary = open("./ids/twitter_id.txt").read.split("\n")
 
     # initialize
     @user = ary[0]
