@@ -14,9 +14,6 @@ OptionParser.new { |opts|
     puts opts
     exit
   }
-  opts.on("-f [string]", "file name without suffix"){ |f|
-    @header = f
-  }
   opts.on("-n [int]", "interger"){ |f|
     @n = f.to_i
   }
@@ -24,12 +21,12 @@ OptionParser.new { |opts|
     @m = f.to_i
   }
   #### update db file ####
-  opts.on("--update", "update db"){
+  opts.on("--update", "update users' info."){
     bl = MyBooklog.new
     bl.update
   }
   #### export dat files ####
-  opts.on("--export", "export db with thresould = n"){
+  opts.on("--export", "export database with thresould n"){
     MyBooklog.new.export_dat(@n)
   }
   #### follow users who tweet with #booklog ####
@@ -38,12 +35,12 @@ OptionParser.new { |opts|
     bl.follow_new_users(@n)
   }
   #### unfollow users who is not a friend ####
-  opts.on("--unfollow", "unfollow users who is not a friend."){
+  opts.on("--unfollow", "unfollow non-friend users"){
     bl = MyBooklog.new
     bl.unfollow_users(@n)
   }
   #### post new releases ####
-  opts.on("--release", "Post new releases of n-days after with thresould m"){
+  opts.on("--release", "Post new releases after n days with thresould m"){
     MyBooklog.new.post_release(@n, @m)
   }
   #### post recommendations ####
@@ -51,7 +48,7 @@ OptionParser.new { |opts|
     MyRecommender.new.post_recommend(@n)
   }
   #### show resut ####
-  opts.on("--show", "show clustering result"){
+  opts.on("--show", "show co-clustering result"){
     MyRecommender.new.show
   }
   # parse

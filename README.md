@@ -189,7 +189,7 @@ asin 集合 asins をいくつかのグループに分割する。
 推薦ツイートを n 人分 post する。  
 実際に post するのではなく、topost.txt に追加する。
 
-####　get_recommend_for(ui)
+#### get_recommend_for(ui)
 ユーザ ui に対する推薦アイテムを取得する。
 
 #### get_recommend_from(ui)
