@@ -68,4 +68,27 @@ twitter api を利用して色々する。（特殊な機能は増えていな�
 5. oauth token (secret)
 
 ### メソッド一覧
-#### 
+#### search(query, num)
+query で検索した結果、見つかった tweet を num 件返す。
+ただし 1000 件が上限。
+
+#### timeline(num)
+自身の timeline から tweet を num 件取得。
+
+#### ids2names(ids)
+user id 集合 ids を受け取り、対応する screen name 集合を返す。
+
+#### followers
+自身の follower の screen name を返す。
+
+#### followings
+自身の following の screen name を返す。
+
+#### follow(user)
+user (screen name) を follow する。
+
+#### unfollow(user)
+user (screen name) を unfollow する。
+
+#### friend?(user)
+自身と user (screen name) が相互フォローならば真、そうでなければ偽を返す。
