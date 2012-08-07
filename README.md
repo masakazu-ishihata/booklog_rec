@@ -1,7 +1,6 @@
-# booklog_rec　
+# [booklog_rec][]
 
 ソーシャル本棚サービス [booklog][] の非公式推薦 bot。  
-Twitter bot [booklog_rec][] のコードが長くなったのでリファクタリングを兼ねて公開。  
 ここで公開するプログラムの主な機能は以下のとおり。
 
 1. booklog と Twitter を連携しているユーザをフォロー。
@@ -9,13 +8,15 @@ Twitter bot [booklog_rec][] のコードが長くなったのでリファクタ�
 3. 新刊情報 tweet 生成。
 4. おすすめ tweet 生成。
 
-なお、おすすめ計算のメインは C で書いているので割愛。  
-(気が向いたら公開。)
+なお、おすすめ計算のメインは C で書いているので割愛。(気が向いたら公開予定。)  
+また実際に post するには別のプログラムを使っていますが、それは重要でないので割愛。
 
 [booklog_rec]: http://twitter.com/booklog_rec "Twitter: booklog_rec"
 [booklog]: http://booklog.jp "booklog"
 
-# プログラムたち
+
+# Programs
+
 ## myamazon.rb
 ### 概要
 MyAmazon クラスを定義。  
