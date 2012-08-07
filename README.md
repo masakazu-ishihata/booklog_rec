@@ -1,15 +1,15 @@
 # booklog_rec　
 
-Twitter bot "booklog_rec" のコードが長くなったのでリファクタリングを兼ねて公開。
-
-# bot 詳細
-ソーシャル本棚サービス "booklog" [1] の非公式推薦 bot [2]。
+Twitter bot "booklog_rec"[1] のコードが長くなったのでリファクタリングを兼ねて公開。
+ソーシャル本棚サービス "booklog"[2] の非公式推薦 bot。
 booklog と Twitter を連携しているユーザをフォローし、各ユーザの蔵書情報
 をもとにユーザ毎の推薦を実現。
 メインの推薦エンジンは c で書いてあるので割愛。
 
-[1] http://booklog.jp/
-[2] http://twitter.com/booklog_rec
+[1] http://twitter.com/booklog_rec
+[2] http://booklog.jp
+
+
 
 # プログラムたち
 
