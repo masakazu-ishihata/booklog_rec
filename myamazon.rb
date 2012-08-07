@@ -88,12 +88,12 @@ class MyAmazon
       else
         # success
         if res.items.size > 0
-          res.items.each do |item|
-            item['asin']   = item.get('ASIN')
-            item['title']  = item.get('ItemAttributes/Title')
-            item['author'] = item.get('ItemAttributes/Author')
-            item['date']   = item.get('ItemAttributes/PublicationDate')
-            item['url']    = item.get('DetailPageURL')
+          res.items.each do |i|
+            item['asin']   = i.get('ASIN')
+            item['title']  = i.get('ItemAttributes/Title')
+            item['author'] = i.get('ItemAttributes/Author')
+            item['date']   = i.get('ItemAttributes/PublicationDate')
+            item['url']    = i.get('DetailPageURL')
 
             # remove ',' from title & author
             item['title'].gsub!(/,/, "")  if item['title'] != nil
@@ -114,7 +114,7 @@ class MyAmazon
   #### ask_asins ####
   def ask_asins(asins)
     asins.each do |asin|
-      ask(asin)
+      puts "ask #{asin} = #{ask(asin)["title"]}" if @@log[asin] == nil
     end
     backup
   end

@@ -44,8 +44,6 @@ class MyBooklog
       @db[user] = Hash.new(nil) if @db[user] == nil
       @db[user][asin] = rank
     end
-    s = 0
-    @db.keys.map{ |e| s += @db[e].keys.size }
   end
 
   #### exporters ####
