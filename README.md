@@ -49,7 +49,21 @@ myamazon と同様、取得に失敗すると数秒待って再取得する。
 
 a = MyAmazon.new
 b = MyBitly.new
-
 p b.shorten(a.ask(asin)['url'])
 
 
+### mytwitter.rb
+
+#### 概要
+twitter api を利用して色々する。
+（特殊な機能は増えていない。）
+
+以下の情報を書いた twitter_id.txt が必要。
+- twitter id
+- consumer key
+- consumer key (secret)
+- oauth token
+- oauth token (secret)
+
+#### メソッド一覧
+##### 
