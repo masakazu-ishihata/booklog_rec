@@ -114,7 +114,7 @@ class MyTwitter
 
       # post
       tws.each do |tw|
-        puts "#{tw} (#{tw.size})"
+        puts "#{tw} (#{Time.now})"
         Twitter.update(tw) if tw.size <= 140 rescue puts "fail to post \"#{tw}\""
         open(@posted, "a").puts tw
       end

@@ -83,7 +83,7 @@ class MyAmazon
         # wait w_sec if fail
         w_sec *= (n_try += 1)
         w_sec = 3600 if w_sec > 3600
-        puts "wait #{w_sec} sec"
+        puts "wait #{w_sec} sec (#{Time.now})"
         sleep(w_sec)
         redo
       else
