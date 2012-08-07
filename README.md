@@ -1,6 +1,6 @@
 # booklog_rec　
 
-ソーシャル本棚サービス [booklog][]の非公式推薦 bot。  
+ソーシャル本棚サービス [booklog][] の非公式推薦 bot。  
 Twitter bot [booklog_rec][] のコードが長くなったのでリファクタリングを兼ねて公開。  
 ここで公開するプログラムの主な機能は以下のとおり。
 
@@ -18,6 +18,7 @@ Twitter bot [booklog_rec][] のコードが長くなったのでリファクタ�
 # プログラムたち
 ## myamazon.rb
 ### 概要
+MyAmazon クラスを定義。  
 Amazon API を利用し、商品の asin から商品情報を取得。  
 以下の情報を書いた amazon_id.txt が必要。  
 
@@ -54,6 +55,7 @@ backup しなかった取得情報は破棄される。
 
 ## mybitly.rb
 ### 概要
+MyBitlry クラスを定義。  
 bitly api を利用して long_url を short_url へ変換。  
 以下の情報を書いた bitly_id.txt が必要。
 
@@ -74,6 +76,7 @@ myamazon と同様、取得に失敗すると数秒待って再取得する。
 
 ## mytwitter.rb
 ### 概要
+MyTwitter クラスを定義。  
 twitter api を利用して色々する。（特殊な機能は増えていない。）  
 以下の情報を書いた twitter_id.txt が必要。
 
@@ -119,8 +122,9 @@ post した tweet は posted.txt に記録され、再 post しない。
 
 ***
 
-## MyBooklog.rb
+## mybooklog.rb
 ### 概要
+MyBooklog クラスを定義。  
 各種 api を利用して以下を行う。
 
 - twitter と booklog を連携しているユーザを検索
@@ -128,13 +132,79 @@ post した tweet は posted.txt に記録され、再 post しない。
 - 新刊情報の取得
 
 ### メソッド一覧
-いつか書く。
+#### update
+フォローしているユーザの蔵書情報を更新する。
+
+#### follow_new_users(num)
+booklog のレビュー tweet を num 件取得し、まだフォローしていないユーザをフォローする。  
+num ユーザフォローするわけではない。
+
+#### add_user(tw_user, bl_user)
+twitter id が tw_user, booklog id が bl_user であるユーザを追加する。  
+具体的にはフォローして蔵書情報を取得する。
+
+#### load_user(bl_user)
+bl_user の蔵書情報を取得する。
+
+#### follow_user(tw_user)
+tw_user をフォローする。
+
+#### unfollow_users(num)
+相互フォローしていないユーザを num 人アンフォローする。
+
+#### MyBooklog.get_release(day, category, th)
+発売日が day, 分類が category かつ　booklog での登録ユーザが th 以上のアイテムを取得する。  
+クラスメソッド。
+
+#### post_release(n, m)
+発売日が n 日後の m 人以上に登録されているアイテムを post する。  
+実際に post するのではなく、topost.txt に追加する。
+
+#### search_users(num)
+booklog のレビュー tweet を num 件取得し、そこからフォローしていないユーザを探す。
+
+#### MyBooklog.search_bl_user(tw_user)
+tw_user の過去のツイートより、対応する booklog id を取得する。  
+クラスメソッド。
+
+#### MyBooklog.tweet2users(tw)
+tweet tw から tw_user と bl_user を取り出す。
+クラスメソッド。
 
 ***
 
-## MyRecommender
+## myrecommender.rb
 ### 概要
-メインの推薦エンジンの出力をもとに、おすすめツイートを生成する。
+MyRecommender クラスを定義。  
+C で書かれた co-clustering プログラムの出力を読み込み、おすすめツイートを生成する。  
+co-clustering の方法や出力フォーマットは割愛。
 
 ### メソッド一覧
-いつか書く。
+#### grouping(asins)
+asin 集合 asins をいくつかのグループに分割する。  
+狙いは同じ漫画の続巻をひとつのグループに分けること。  
+しかし完璧ではない。
+
+#### post_recommend(n)
+推薦ツイートを n 人分 post する。  
+実際に post するのではなく、topost.txt に追加する。
+
+####　get_recommend_for(ui)
+ユーザ ui に対する推薦アイテムを取得する。
+
+#### get_recommend_from(ui)
+ユーザ ui からの推薦アイテムを取得する。  
+正確には ui が星を5つ付けたアイテムをランダムに１つ返す。
+
+#### show
+読み込んだクラスタリング結果を表示する。  
+
+
+***
+
+## main.rb
+### 概要
+主にこれに引数を与え実行することで色々する。
+詳しくは以下を実行。
+
+    ./main.rb --help
