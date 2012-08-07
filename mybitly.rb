@@ -38,6 +38,7 @@ class MyBitly
         short_url = ""
         w_sec *= (n_try += 1)
         w_sec = 3600 if w_sec > 3600
+        puts "wait #{w_sec} sec"
         sleep(w_sec)
       end
     end while short_url == ""

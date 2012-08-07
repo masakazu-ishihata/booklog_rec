@@ -174,7 +174,9 @@ class MyBooklog
   def load_user(bl_user)
     mpage = 100
     count = 100
+    asins = []
 
+    am = MyAmazon.new
     @db[bl_user] = Hash.new(nil) if @db[bl_user] == nil
 
     # open until empty
@@ -190,6 +192,7 @@ class MyBooklog
         # registrate to @db
         asin = book["asin"]
         rank = book["rank"]
+        asins.push(asin) if am.history[asin] == nil
         @db[bl_user][asin] = rank
       end
 
@@ -198,12 +201,14 @@ class MyBooklog
     end
 
     #### load book info from amazon ####
+    puts "ask #{asins.size} items"
+    am.ask_asins(asins)
     export_db
   end
 
   #### follow a user
   def follow_user(tw_user)
-#    MyTwitter.new.follow(tw_user)
+    MyTwitter.new.follow(tw_user)
   end
 
   ########################################
@@ -221,8 +226,9 @@ class MyBooklog
     puts "#{un_users[0..num-1].size} users will be unfollowed."
       un_users[0..num-1].each do |tw_user|
       puts "delete #{tw_user}"
-      @uh.delete(tw_user)
       t.unfollow(tw_user)
+      @db.delete(bl_user) if (bl_user = @uh[tw_user]) != nil
+      @uh.delete(tw_user)
       export_uh
       sleep(30) if un_users[0..num-1].size > 350
     end

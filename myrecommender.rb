@@ -23,8 +23,14 @@ class MyRecommender
     # hisitory
     @his = Hash.new
 
-    # ask all items to amazon
-    MyAmazon.new.ask_asins(@n[1])
+    # ask items
+    asins = []
+    @db.keys.each do |user|
+      @db[user].keys do |asin|
+        asins.push(asin) if @db[user][asin] == 5
+      end
+    end
+    MyAmazon.new.ask_asins(@n[1] + asins)
   end
 
   ########################################

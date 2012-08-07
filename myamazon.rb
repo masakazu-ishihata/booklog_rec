@@ -83,6 +83,7 @@ class MyAmazon
         # wait w_sec if fail
         w_sec *= (n_try += 1)
         w_sec = 3600 if w_sec > 3600
+        puts "wait #{w_sec} sec"
         sleep(w_sec)
         redo
       else
@@ -113,8 +114,11 @@ class MyAmazon
 
   #### ask_asins ####
   def ask_asins(asins)
+    n = 0
     asins.each do |asin|
-      puts "ask #{asin} = #{ask(asin)["title"]}" if @@log[asin] == nil
+      next if @@log[asin] != nil
+      puts "ask #{asin} = #{ask(asin)["title"]}"
+      backup if (n += 1) % 100 == 0
     end
     backup
   end
