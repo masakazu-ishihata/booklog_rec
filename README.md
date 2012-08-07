@@ -15,7 +15,13 @@ booklog と Twitter を連携しているユーザをフォローし、各ユー
 
 ### myamazon.rb
 
-Amazon API をもとに作った。
+Amazon API を利用し、商品の asin から商品情報を取得。
+
+以下の情報を書いた amazon_id.txt が必要。
+- associate tag
+- aws access key 
+- aws secret key
+
 ask(asin) で以下の情報を取得。
 - titile
 - author
@@ -32,5 +38,18 @@ bot に積むようなので気長に待ってね。
 ### mybitly.rb
 
 bitly api を利用して long_url を short_url へ変換。
-shorten(long_url) で短縮 url を返す。
+
+以下の情報を書いた bitly_id.txt が必要。
+- account
+- api key
+
+shorten(long_url) は短縮 url を返す。
 myamazon と同様、取得に失敗すると数秒待って再取得する。
+例えば、以下のように asin からその商品の短縮 url が取得可能。
+
+a = MyAmazon.new
+b = MyBitly.new
+
+p b.shorten(a.ask(asin)['url'])
+
+
