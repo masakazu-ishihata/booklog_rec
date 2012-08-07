@@ -1,10 +1,16 @@
 #!/usr/bin/env ruby
+
+################################################################################
+# require
+################################################################################
 require 'amazon/ecs'
 
 ################################################################################
 # My Amazon
 ################################################################################
 class MyAmazon
+  @@log = nil
+
   #### new ####
   def initialize
     # load keys
@@ -21,46 +27,51 @@ class MyAmazon
     }
 
     # load log
-    @file = "myamazon.log"
-    @log = Hash.new
-    open(@file).read.split("\n").each do |line|
-      puts line if line.split(", ").size % 2 == 1
-      h = Hash[ *line.split(", ") ]
-      asin = h["asin"]
-      @log[asin] = h if @log[asin] == nil
-    end
-  end
-
-  #### show_log ####
-  def show_log
-    puts "#{@log.size} items"
-    @log.values.each do |book|
-      puts "#{book.to_a.join(", ")}"
-    end
-  end
-
-  #### export_log ####
-  def export_log
-    open(@file, "w") do |f|
-      @log.values.each do |b|
-        f.puts b.to_a.join(", ")
+    if @@log == nil
+      @@log = Hash.new
+      open("myamazon.log").read.split("\n").each do |line|
+        puts line if line.split(", ").size % 2 == 1
+        h = Hash[ *line.split(", ") ]
+        asin = h["asin"]
+        @@log[asin] = h if @@log[asin] == nil
       end
     end
+  end
+
+  #### history ####
+  def history
+    @@log
+  end
+
+  #### show ####
+  def show
+    puts "#{@@log.size} items"
+    @@log.values.each do |item|
+      puts "#{item.to_a.join(", ")}"
+    end
+  end
+
+  #### backup ####
+  def backup
+    f = open("myamazon.log", "w")
+    @@log.values.each do |b|
+      f.puts b.to_a.join(", ")
+    end
+    f.close
   end
 
   #### ask ####
   def ask(asin)
     # asin in log
-    return @log[asin] if @log[asin] != nil
+    return @@log[asin] if @@log[asin] != nil
 
-    # init book info.
-    book = Hash.new
-    book['asin']   = asin    # ASIN
-    book['title']  = 'NULL'  # Title
-    book['author'] = 'NULL'  # Authors
-    book['date']   = 'NULL'  # date
-    book['url']    = 'NULL'  # url
-
+    # init item info.
+    item = Hash.new
+    item['asin']   = asin    # ASIN
+    item['title']  = 'NULL'  # Title
+    item['author'] = 'NULL'  # Authors
+    item['date']   = 'NULL'  # date
+    item['url']    = 'NULL'  # url
 
     # ask to amazon
     n_try = 0
@@ -78,26 +89,33 @@ class MyAmazon
         # success
         if res.items.size > 0
           res.items.each do |item|
-            book['asin']   = item.get('ASIN')
-            book['title']  = item.get('ItemAttributes/Title')
-            book['author'] = item.get('ItemAttributes/Author')
-            book['date']   = item.get('ItemAttributes/PublicationDate')
-            book['url']    = item.get('DetailPageURL')
+            item['asin']   = item.get('ASIN')
+            item['title']  = item.get('ItemAttributes/Title')
+            item['author'] = item.get('ItemAttributes/Author')
+            item['date']   = item.get('ItemAttributes/PublicationDate')
+            item['url']    = item.get('DetailPageURL')
 
             # remove ',' from title & author
-            book['title'].gsub!(/,/, "") if book['title'] != nil
-            book['author'].gsub!(/,/, "") if book['author'] != nil
+            item['title'].gsub!(/,/, "")  if item['title'] != nil
+            item['author'].gsub!(/,/, "") if item['author'] != nil
           end
         end
         break
       end
     end
 
-    # add book to log
-    @log[asin] = book
-    export_log
+    # add item to log
+    @@log[asin] = item
 
     # return the result
-    book
+    item
+  end
+
+  #### ask_asins ####
+  def ask_asins(asins)
+    asins.each do |asin|
+      ask(asin)
+    end
+    backup
   end
 end

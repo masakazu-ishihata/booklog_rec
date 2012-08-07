@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+
+################################################################################
+# require
+################################################################################
 require 'twitter'
 
 ################################################################################
@@ -7,6 +11,10 @@ require 'twitter'
 class MyTwitter
   #### new ####
   def initialize
+    # files
+    @topost = "topost.txt"
+    @posted = "posted.txt"
+
     # load id
     ary = open("twitter_id.txt").read.split("\n")
 
@@ -84,5 +92,35 @@ class MyTwitter
   #### is friend ? ####
   def friend?(user)
     Twitter.friendship?(@user, user)
+  end
+
+  #### post ####
+  def post(str)
+    puts "#{str} (#{str.size})"
+    open(@topost, "a").puts str
+  end
+
+  #### post num tweets / min mins from @topost ####
+  def post_from_list(num, mim)
+    # load topost
+    topost = open(@topost).read.split("\n") - open(@posted).read.split("\n")
+
+    while topost.size > 0
+      # first num tweets
+      tws = []
+      for i in 1..num
+        tws.push(topost.shift)
+      end
+
+      # post
+      tws.each do |tw|
+        puts "#{tw} (#{tw.size})"
+        Twitter.update(tw) if tw.size <= 140 rescue puts "fail to post \"#{tw}\""
+        open(@posted, "a").puts tw
+      end
+
+      # wait
+      sleep(60 * min)
+    end
   end
 end
