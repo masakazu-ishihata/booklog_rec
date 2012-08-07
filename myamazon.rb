@@ -69,13 +69,13 @@ class MyAmazon
       begin
         res = Amazon::Ecs.item_lookup(asin, { :response_group => 'Medium', :country => 'jp' })
       rescue
-        # wait w_sec if fail to ask
+        # wait w_sec if fail
         w_sec *= (n_try += 1)
         w_sec = 3600 if w_sec > 3600
         sleep(w_sec)
         redo
       else
-        # successfly asked
+        # success
         if res.items.size > 0
           res.items.each do |item|
             book['asin']   = item.get('ASIN')
