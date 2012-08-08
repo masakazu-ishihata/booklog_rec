@@ -107,25 +107,32 @@ class MyTwitter
 
   #### post num tweets / min mins from @topost ####
   def post_from_list(num, mim)
-    # load topost
-    topost = open(@topost).read.split("\n") - open(@posted).read.split("\n")
+    begin
+      # load topost
+      topost = open(@topost).read.split("\n") - open(@posted).read.split("\n")
 
-    while topost.size > 0
-      # first num tweets
-      tws = []
-      for i in 1..num
-        tws.push(topost.shift)
-      end
+      puts "#{topost.size} tweets will be posted." if topost.size > 0
 
-      # post
-      tws.each do |tw|
-        puts "#{tw} (#{Time.now})"
-        Twitter.update(tw) if tw.size <= 140 rescue puts "fail to post \"#{tw}\""
-        open(@posted, "a").puts tw
+      while topost.size > 0
+        # first num tweets
+        tws = []
+        while (tw = topost.shift) != nil && tws.size < num
+          tws.push(tw)
+        end
+
+        # post
+        tws.each do |tw|
+          puts "#{tw} (#{Time.now})"
+          Twitter.update(tw) if tw.size <= 140 rescue puts "fail to post \"#{tw}\""
+          open(@posted, "a").puts tw
+        end
+
+        # wait
+        sleep(60 * min)
       end
 
       # wait
-      sleep(60 * min)
-    end
+      sleep(300)
+    end while true
   end
 end
