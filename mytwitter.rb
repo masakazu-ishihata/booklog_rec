@@ -89,7 +89,12 @@ class MyTwitter
     end
   end
 
-  #### is friend ? ####
+  #### user? ####
+  def user?(user)
+    Twitter.user?(user)
+  end
+
+  #### friend? ####
   def friend?(user)
     Twitter.friendship?(@user, user)
   end

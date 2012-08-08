@@ -111,6 +111,9 @@ user (screen name) を follow する。
 #### unfollow(user)
 user (screen name) を unfollow する。
 
+#### user?(user) ####
+user が存在するかどうか返す。
+
 #### friend?(user)
 自身と user (screen name) が相互フォローならば真、そうでなければ偽を返す。
 
@@ -136,22 +139,33 @@ MyBooklog クラスを定義。
 #### update
 フォローしているユーザの蔵書情報を更新する。
 
+#### user?(tw_user)
+(tw_user, @uh[tw_user]) が有効なら真、そうでなければ偽を返す。  
+(tw_user, bl_user) が有効であるとは以下を満たすことを言う。
+
+- tw_user が Twitter id である。
+- bl_user が booklog id である。
+
 #### follow_new_users(num)
 booklog のレビュー tweet を num 件取得し、まだフォローしていないユーザをフォローする。  
 num ユーザフォローするわけではない。
 
+#### unfollow_users(num)
+相互フォローしていないユーザを num 人アンフォローする。
+
 #### add_user(tw_user, bl_user)
 twitter id が tw_user, booklog id が bl_user であるユーザを追加する。  
 具体的にはフォローして蔵書情報を取得する。
+
+#### remove_user(tw_user, bl_user)
+twitter id が tw_user, booklog id が bl_user であるユーザを削除する。  
+具体的にはアンフォローして蔵書情報を削除する。
 
 #### load_user(bl_user)
 bl_user の蔵書情報を取得する。
 
 #### follow_user(tw_user)
 tw_user をフォローする。
-
-#### unfollow_users(num)
-相互フォローしていないユーザを num 人アンフォローする。
 
 #### MyBooklog.get_release(day, category, th)
 発売日が day, 分類が category かつ　booklog での登録ユーザが th 以上のアイテムを取得する。  
