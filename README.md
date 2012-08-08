@@ -45,6 +45,9 @@ bot に積むようなので気長に待ってね。
 #### history
 過去に取得した商品情報を格納したハッシュを返す。
 
+#### asked?(asin)
+asin を過去に取得していれば真、そうでなければ偽を返す。
+
 #### show
 これまでに取得した商品情報を表示。
 
@@ -157,8 +160,8 @@ num ユーザフォローするわけではない。
 twitter id が tw_user, booklog id が bl_user であるユーザを追加する。  
 具体的にはフォローして蔵書情報を取得する。
 
-#### remove_user(tw_user, bl_user)
-twitter id が tw_user, booklog id が bl_user であるユーザを削除する。  
+#### remove_user(tw_user)
+twitter id が tw_user であるユーザを削除する。  
 具体的にはアンフォローして蔵書情報を削除する。
 
 #### load_user(bl_user)

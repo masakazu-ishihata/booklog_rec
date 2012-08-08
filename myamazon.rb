@@ -43,6 +43,11 @@ class MyAmazon
     @@log
   end
 
+  #### asked? ####
+  def asked?(asin)
+    @@log[asin] != nil
+  end
+
   #### show ####
   def show
     puts "#{@@log.size} items"

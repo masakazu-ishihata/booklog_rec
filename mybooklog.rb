@@ -134,7 +134,6 @@ class MyBooklog
       if user?(tw_user)
         # reload if tw_user is a valid id
         bl_user = @uh[tw_user]
-        puts "update #{bl_user}"
         load_user(bl_user)
       else
         # remove if tw_user is an invalid id
@@ -152,4 +151,225 @@ class MyBooklog
     # bl_user is not a user of Booklog
     bl_user = @uh[tw_user]
 
-    # try t
+    # try to open bl_user's page
+    url  = "http://api.booklog.jp/users/#{bl_user}"
+    open(url) rescue return false
+    return true
+  end
+
+  ########################################
+  # follow new users
+  ########################################
+  #### follow num new users
+  def follow_new_users(num)
+    # find new users
+    users = search_users(num)
+    puts "#{users.keys.size} users will be followed."
+
+    # follow new users
+    users.each do |tw_user, bl_user|
+      add_user(tw_user, bl_user)
+    end
+  end
+
+  #### unfollow users
+  def unfollow_users(num)
+    # get num non-friend users
+    tw = MyTwitter.new
+    users = (tw.followings - tw.followers).shuffle
+    puts "#{un_users[0..num-1].size} users will be unfollowed."
+
+    #### unfollow users who do not follow me ####
+    users[0..num-1].each do |tw_user|
+      remove_user(tw_user)
+    end
+  end
+
+  #### add a new user
+  def add_user(tw_user, bl_user)
+    puts "add #{tw_user} = #{bl_user}"
+
+    # load users who are successfly followed
+    begin
+      follow_user(tw_user)    # follow twitter user
+    rescue
+      # fail
+      puts "fail to follow #{tw_user}"
+    else
+      # success
+      load_user(bl_user)      # load booklog user
+      @uh[tw_user] = bl_user  # registrate tw_user & bl_user
+      export_uh
+    end
+  end
+
+  #### remove a user ####
+  def remove_user(tw_user)
+    bl_user = @uh[tw_user)
+    puts "remove #{tw_user} = #{bl_user}"
+
+    # unfollow
+    MyTwitter.new.unfollow(tw_user)
+
+    # remove from database
+    @db.delete(bl_user)
+    export_db
+
+    # remove from user hash
+    @uh.delete(tw_user)
+    export_uh
+  end
+
+  #### load a user
+  def load_user(bl_user)
+    puts "load #{bl_user}"
+    mpage = 100
+    count = 100
+    asins = []
+
+    am = MyAmazon.new
+    @db[bl_user] = Hash.new(nil) if @db[bl_user] == nil
+
+    # open until empty
+    for page in 1..mpage
+      # open page
+      url  = "http://api.booklog.jp"
+      path = "/users/#{bl_user}/comic?"
+      opt  = "status=3&count=#{count}&page=#{page}"
+      db = JSON.parse( open(url + path + opt).read )
+
+      # get books
+      db["books"].each do |book|
+        # registrate to @db
+        asin = book["asin"]
+        rank = book["rank"]
+        asins.push(asin) if !am.asked?(asin)
+        @db[bl_user][asin] = rank
+      end
+
+      # break if thare is no book
+      break if db["books"].size < count
+    end
+
+    #### load book info from amazon ####
+    puts "ask #{asins.size} items"
+    am.ask_asins(asins)
+    export_db
+  end
+
+  #### follow a user
+  def follow_user(tw_user)
+    puts "follow #{tw_user}"
+    MyTwitter.new.follow(tw_user)
+  end
+
+  ########################################
+  # new release
+  ########################################
+  #### get new release ####
+  def MyBooklog.get_release(day, category, th)
+    asins = Array.new  # books
+
+    # open until empty
+    n = 0 # previous asin.size
+    for page in 1..10
+      # open page
+      url  = "http://booklog.jp"
+      path = "/release/#{category}/#{day.strftime("%Y-%m-%d")}"
+      opt  = "?threshold=#{th}&term=all&page=#{page}"
+
+      # get books
+      open(url + path  + opt).read.split("\n").each do |line|
+        # get a book
+        if line.index("class=\"titleLink\"") != nil
+          # add to list
+          asin  = line.gsub(/^.*\/1\//, "").gsub(/\".*$/,"")
+          asins.push(asin)
+        end
+      end
+
+      # break if final page
+      break if asins.size == n
+      n = asins.size
+    end
+
+    # return booklist
+    asins
+  end
+
+  #### post new release
+  def post_release(n, m)
+    am = MyAmazon.new
+    tw = MyTwitter.new
+    bl = MyBitly.new
+    d = Time.now + n*24*60*60
+
+    [ "comic", "book", "game", "magazine" ].each do |category|
+      asins = get_release(d, category, m)
+      asins.each do |asin|
+        item      = am.ask(asin)
+        title     = item["title"]
+        long_url  = item["url"]
+        next if title.index(/^NULL$/) != nil # skip if title = NULL
+
+        short_url = bl.shorten(long_url)
+        text = "[#{d.strftime("%Y-%m-%d")}] ##{category} #release #{title} #{short_url} #booklog"
+        tw.post(text)
+      end
+    end
+
+    am.backup
+  end
+
+  ########################################
+  # search
+  ########################################
+  # search users who tweet with #booklog
+  def search_users(num)
+    tw = MyTwitter.new
+    users = Hash.new
+    tw.search("#{@@query} -booklog_rec", num).each do |tw|
+      next if tw["to_user"] != nil # tw is not a original tweet
+
+      tw_user = tw.from_user
+      next if !tw.user?(tw_user)   # tw_user has already been deleted
+      next if @uh[tw_user] != nil  # tw_user has already been followed
+
+      puts "---- check #{tw_user}'s tweet ----"
+      puts "#{tw.text.gsub(/\n/,"")}"
+
+      next if (bl_user = tweet2users(tw)) == nil # no corresponding booklog id
+
+      puts " -> #{tw_user} #{bl_user}"
+      users[tw_user] = bl_user
+    end
+    users
+  end
+
+  # search bl_user of tw_user
+  def MyBooklog.search_bl_user(tw_user)
+    bl_user = nil
+    MyTwitter.new.search("#{tw_user} #{@@query}", 100).each do |tw|
+      break if tw_user == tw.from_user &&  (bl_user = tweet2users(tw)) != nil
+    end
+    bl_user
+  end
+
+  #### tweet to users ####
+  def MyBooklog.tweet2users(tw)
+    tw_user = tw.from_user
+    bl_user = nil
+
+    #### registrat user if corresponding booklog user is found ####
+    if tw.text.index("http:") != nil
+      url = tw.text.gsub(/\n/, " ").gsub(/^..*http/,"http").split(/[ 　]/)[0]
+      open(url).read.split("\n").each do |line|
+        if line.index(/property=\"og:url\"/) != nil && line.index(/users\//) != nil
+          bl_user = line.gsub(/^.*users\//,"").gsub(/\/.*$/, "").gsub(/\n/,"")
+          break
+        end
+      end rescue bl_user = nil
+    end
+    bl_user
+  end
+end
