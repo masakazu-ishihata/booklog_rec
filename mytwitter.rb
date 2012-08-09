@@ -105,10 +105,12 @@ class MyTwitter
   end
 
   #### post num tweets / min mins from @topost ####
-  def post_from(num, mim)
+  def post_from_list(num, mim)
     begin
       # load topost
       topost = open(@topost).read.split("\n") - open(@posted).read.split("\n")
+
+      puts "#{topost.size} tweets will be posted." if topost.size > 0
 
       while topost.size > 0
         # first num tweets
@@ -128,7 +130,8 @@ class MyTwitter
         sleep(60 * min)
       end
 
-      sleep(60 * min)
+      # wait
+      sleep(300)
     end while true
   end
 end
