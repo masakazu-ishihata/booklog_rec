@@ -205,7 +205,7 @@ class MyBooklog
 
   #### remove a user ####
   def remove_user(tw_user)
-    bl_user = @uh[tw_user)
+    bl_user = @uh[tw_user]
     puts "remove #{tw_user} = #{bl_user}"
 
     # unfollow
@@ -252,9 +252,9 @@ class MyBooklog
     end
 
     #### load book info from amazon ####
-    puts "ask #{asins.size} items"
+    puts "ask #{asins.size}/#{@db[bl_user].size} items"
+    export_db if asins.size > 0
     am.ask_asins(asins)
-    export_db
   end
 
   #### follow a user

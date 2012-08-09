@@ -13,7 +13,6 @@ class MyTwitter
   def initialize
     # files
     @topost = "topost.txt"
-    @posted = "posted.txt"
 
     # load id
     ary = open("./ids/twitter_id.txt").read.split("\n")
@@ -106,26 +105,30 @@ class MyTwitter
   end
 
   #### post num tweets / min mins from @topost ####
-  def post_from_list(num, mim)
-    # load topost
-    topost = open(@topost).read.split("\n") - open(@posted).read.split("\n")
+  def post_from(num, mim)
+    begin
+      # load topost
+      topost = open(@topost).read.split("\n") - open(@posted).read.split("\n")
 
-    while topost.size > 0
-      # first num tweets
-      tws = []
-      for i in 1..num
-        tws.push(topost.shift)
+      while topost.size > 0
+        # first num tweets
+        tws = []
+        while (tw = topost.shift) != nil && tws.size < num
+          tws.push(tw)
+        end
+
+        # post
+        tws.each do |tw|
+          puts "#{tw} (#{Time.now})"
+          Twitter.update(tw) if tw.size <= 140 rescue puts "fail to post \"#{tw}\""
+          open(@posted, "a").puts tw
+        end
+
+        # wait
+        sleep(60 * min)
       end
 
-      # post
-      tws.each do |tw|
-        puts "#{tw} (#{Time.now})"
-        Twitter.update(tw) if tw.size <= 140 rescue puts "fail to post \"#{tw}\""
-        open(@posted, "a").puts tw
-      end
-
-      # wait
       sleep(60 * min)
-    end
+    end while true
   end
 end
