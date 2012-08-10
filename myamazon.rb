@@ -35,6 +35,7 @@ class MyAmazon
         asin = h["asin"]
         @@log[asin] = h if @@log[asin] == nil
       end
+      puts "myamazon.log is loaded."
     end
   end
 
@@ -119,6 +120,7 @@ class MyAmazon
 
   #### ask_asins ####
   def ask_asins(asins)
+    return 0 if asins.size == 0
     n = 0
     asins.each do |asin|
       next if @@log[asin] != nil
@@ -126,5 +128,6 @@ class MyAmazon
       backup if (n += 1) % 100 == 0
     end
     backup
+    n
   end
 end

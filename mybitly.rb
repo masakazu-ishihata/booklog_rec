@@ -24,7 +24,7 @@ class MyBitly
     # make a query
     query = "longUrl=#{CGI.escape(NKF.nkf("-w -m0", long_url))}&login=#{@account}&apiKey=#{@api_key}"
     # get short url
-    n_try = 1
+    n_try = 0
     w_sec = 10
     begin
       # request to bitly api

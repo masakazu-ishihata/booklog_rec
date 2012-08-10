@@ -8,6 +8,16 @@ require './myamazon.rb'
 require './mybitly.rb'
 require './mytwitter.rb'
 
+
+################################################################################
+# array
+################################################################################
+class Array
+  def choice
+    at( rand(size) )
+  end
+end
+
 ################################################################################
 # MyRecommendation
 ################################################################################
@@ -23,7 +33,7 @@ class MyRecommender
     # hisitory
     @his = Hash.new
 
-    # ask items
+    # ask items in @n[1] and those ranked 5 star
     asins = []
     @db.keys.each do |user|
       @db[user].keys do |asin|
@@ -99,7 +109,7 @@ class MyRecommender
   ########################################
   # grouping given asins
   def grouping(asins)
-    bg = Hash.new
+    bg = Hash.new      # book groups
     am = MyAmazon.new
 
     asins.each do |asin|
@@ -236,19 +246,12 @@ class MyRecommender
     # get candidates
     can = Array.new
     @db[un].keys.each do |asin|
-      can.push(asin) if @db[un][asin] == "5"
+      can.push(asin) if @db[un][asin].to_i == 5
     end
     can -= @his.keys
 
     # no candidate
     return nil if can.size == 0
-
-    # registrate candidates
-    asins = Array.new
-    can.each do |asin|
-      asins.push(asin) if @bh[asin] == nil
-    end
-    update_bh(asins)
 
     # grouping
     bg = grouping(can)

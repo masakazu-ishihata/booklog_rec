@@ -36,6 +36,7 @@ class MyBooklog
       ary = line.split(" ")
       @uh[ ary[0] ] = ary[1]
     end
+    puts "userlist.db is imported."
   end
   def import_db
     # data base : user, asin -> rank
@@ -44,6 +45,7 @@ class MyBooklog
       @db[user] = Hash.new(nil) if @db[user] == nil
       @db[user][asin] = rank
     end
+    puts "rank.db is imported."
   end
 
   #### exporters ####
@@ -54,6 +56,7 @@ class MyBooklog
         f.puts "#{tw_user} #{bl_user}"
       end
     end
+    puts "userlist.db is exported."
   end
   # export tuples [user asin rank]
   def export_db
@@ -64,6 +67,7 @@ class MyBooklog
         end
       end
     end
+    puts "rank.db is exported."
   end
   # export dat files
   def export_dat(threshold)
@@ -130,9 +134,12 @@ class MyBooklog
   #### update ####
   def update
     # re-load all users in uh
-    @uh.keys.each do |tw_user|
+    users = @uh.keys.sort
+    for i in 0..users.size-1
+      tw_user = users[i]
       if user?(tw_user)
         # reload if tw_user is a valid id
+        puts "update #{tw_user} (#{i+1}/#{users.size})"
         bl_user = @uh[tw_user]
         load_user(bl_user)
       else
@@ -175,13 +182,12 @@ class MyBooklog
   #### unfollow users
   def unfollow_users(num)
     # get num non-friend users
-    tw = MyTwitter.new
-    users = (tw.followings - tw.followers).shuffle
-    puts "#{un_users[0..num-1].size} users will be unfollowed."
+    users = @uh.to_a.sort{|a,b| @db[a[1]].size <=> @db[b[1]].size}
 
     #### unfollow users who do not follow me ####
-    users[0..num-1].each do |tw_user|
+    users[0..num-1].each do |tw_user, bl_user|
       remove_user(tw_user)
+      sleep(10.3) # for safe
     end
   end
 
@@ -206,7 +212,7 @@ class MyBooklog
   #### remove a user ####
   def remove_user(tw_user)
     bl_user = @uh[tw_user]
-    puts "remove #{tw_user} = #{bl_user}"
+    puts "remove #{tw_user} = #{bl_user} who has #{@db[bl_user].size} items"
 
     # unfollow
     MyTwitter.new.unfollow(tw_user)
@@ -234,16 +240,22 @@ class MyBooklog
     for page in 1..mpage
       # open page
       url  = "http://api.booklog.jp"
-      path = "/users/#{bl_user}/comic?"
-      opt  = "status=3&count=#{count}&page=#{page}"
+      path = "/users/#{bl_user}/"
+      opt  = "?count=#{count}&page=#{page}"
       db = JSON.parse( open(url + path + opt).read )
 
       # get books
       db["books"].each do |book|
         # registrate to @db
         asin = book["asin"]
-        rank = book["rank"]
-        asins.push(asin) if !am.asked?(asin)
+
+        if asin.index("-") != nil
+          @db[bl_user].delete(asin)
+          asin = asin.split("-")[1]
+        end
+
+        rank = book["rank"].to_i
+        asins.push(asin) if !am.asked?(asin) && rank == 5
         @db[bl_user][asin] = rank
       end
 
@@ -252,9 +264,11 @@ class MyBooklog
     end
 
     #### load book info from amazon ####
-    puts "ask #{asins.size}/#{@db[bl_user].size} items"
-    export_db if asins.size > 0
-    am.ask_asins(asins)
+    if asins.size > 0
+      puts "ask #{asins.size}/#{@db[bl_user].size} items"
+      am.ask_asins(asins)
+      export_db
+    end
   end
 
   #### follow a user
@@ -305,7 +319,8 @@ class MyBooklog
     d = Time.now + n*24*60*60
 
     [ "comic", "book", "game", "magazine" ].each do |category|
-      asins = get_release(d, category, m)
+      asins = MyBooklog.get_release(d, category, m)
+      am.ask_asins(asins)
       asins.each do |asin|
         item      = am.ask(asin)
         title     = item["title"]
@@ -317,8 +332,6 @@ class MyBooklog
         tw.post(text)
       end
     end
-
-    am.backup
   end
 
   ########################################
@@ -328,41 +341,32 @@ class MyBooklog
   def search_users(num)
     tw = MyTwitter.new
     users = Hash.new
-    tw.search("#{@@query} -booklog_rec", num).each do |tw|
-      next if tw["to_user"] != nil # tw is not a original tweet
+    tw.search("#{@@query} -booklog_rec", num).each do |tweet|
+      next if (ids = MyBooklog.tweet2user(tweet)) == nil # no corresponding booklog id
+      tw_user = ids[0]
+      bl_user = ids[1]
 
-      tw_user = tw.from_user
-      next if !tw.user?(tw_user)   # tw_user has already been deleted
-      next if @uh[tw_user] != nil  # tw_user has already been followed
+      next if @uh[tw_user] != nil # tw_user is already followed
 
+      # show tweet
       puts "---- check #{tw_user}'s tweet ----"
-      puts "#{tw.text.gsub(/\n/,"")}"
-
-      next if (bl_user = tweet2users(tw)) == nil # no corresponding booklog id
-
+      puts "#{tweet.text.gsub(/\n/,"")}"
       puts " -> #{tw_user} #{bl_user}"
       users[tw_user] = bl_user
     end
     users
   end
 
-  # search bl_user of tw_user
-  def MyBooklog.search_bl_user(tw_user)
-    bl_user = nil
-    MyTwitter.new.search("#{tw_user} #{@@query}", 100).each do |tw|
-      break if tw_user == tw.from_user &&  (bl_user = tweet2users(tw)) != nil
-    end
-    bl_user
-  end
-
   #### tweet to users ####
-  def MyBooklog.tweet2users(tw)
-    tw_user = tw.from_user
+  def MyBooklog.tweet2user(tweet)
+    return nil if tweet.to_user != nil # tweet is not a original
+
+    tw_user = tweet.from_user
     bl_user = nil
 
     #### registrat user if corresponding booklog user is found ####
-    if tw.text.index("http:") != nil
-      url = tw.text.gsub(/\n/, " ").gsub(/^..*http/,"http").split(/[ 　]/)[0]
+    if tweet.text.index("http:") != nil
+      url = tweet.text.gsub(/\n/, " ").gsub(/^..*http/,"http").split(/[ 　]/)[0]
       open(url).read.split("\n").each do |line|
         if line.index(/property=\"og:url\"/) != nil && line.index(/users\//) != nil
           bl_user = line.gsub(/^.*users\//,"").gsub(/\/.*$/, "").gsub(/\n/,"")
@@ -370,6 +374,12 @@ class MyBooklog
         end
       end rescue bl_user = nil
     end
-    bl_user
+
+    # return a pair of user ids
+    if bl_user != nil
+      return [tw_user, bl_user]
+    else
+      return nil
+    end
   end
 end

@@ -154,7 +154,7 @@ booklog のレビュー tweet を num 件取得し、まだフォローしてい
 num ユーザフォローするわけではない。
 
 #### unfollow_users(num)
-相互フォローしていないユーザを num 人アンフォローする。
+相互フォローしていないユーザを蔵書の少ない順に num 人アンフォローする。
 
 #### add_user(tw_user, bl_user)
 twitter id が tw_user, booklog id が bl_user であるユーザを追加する。  
