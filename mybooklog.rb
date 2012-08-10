@@ -133,19 +133,28 @@ class MyBooklog
   ########################################
   #### update ####
   def update
+    users = @uh.keys.sort             # users in user hash
+    flgs = MyTwitter.new.followings   # users in following
+
     # re-load all users in uh
-    users = @uh.keys.sort
     for i in 0..users.size-1
       tw_user = users[i]
+      bl_user = @uh[tw_user]
+
+      t1 = Time.now
       if user?(tw_user)
         # reload if tw_user is a valid id
         puts "update #{tw_user} (#{i+1}/#{users.size})"
-        bl_user = @uh[tw_user]
-        load_user(bl_user)
+        remove_user(tw_user) if !load_user(bl_user)
       else
         # remove if tw_user is an invalid id
         remove_user(tw_user)
       end
+      t2 = Time.now
+
+      # wait for safe
+      sec = 10.3 - (t2-t1)
+      sleep(sec) if sec > 0
     end
     export_db
   end
@@ -201,11 +210,13 @@ class MyBooklog
     rescue
       # fail
       puts "fail to follow #{tw_user}"
+      return false
     else
       # success
       load_user(bl_user)      # load booklog user
       @uh[tw_user] = bl_user  # registrate tw_user & bl_user
       export_uh
+      return true
     end
   end
 
