@@ -75,16 +75,16 @@ class MyTwitter
   #### follow ####
   def follow(user)
     if !Twitter.friendship?(@user, user)
-      puts "follow #{user}"
       Twitter.follow(user)
+      puts "#{user} is followed."
     end
   end
 
   #### unfollow ####
   def unfollow(user)
     if Twitter.friendship?(@user, user)
-      puts "unfollow #{user}"
       Twitter.unfollow(user)
+      puts "#{user} is unfollowed."
     end
   end
 

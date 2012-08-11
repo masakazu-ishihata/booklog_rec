@@ -29,13 +29,13 @@ class MyAmazon
     # load log
     if @@log == nil
       @@log = Hash.new
-      open("myamazon.log").read.split("\n").each do |line|
+      open("amazon.db").read.split("\n").each do |line|
         puts line if line.split(", ").size % 2 == 1
         h = Hash[ *line.split(", ") ]
         asin = h["asin"]
         @@log[asin] = h if @@log[asin] == nil
       end
-      puts "myamazon.log is loaded."
+      puts "amazon.db is loaded."
     end
   end
 
@@ -59,7 +59,7 @@ class MyAmazon
 
   #### backup ####
   def backup
-    f = open("myamazon.log", "w")
+    f = open("amazon.db", "w")
     @@log.values.each do |b|
       f.puts b.to_a.join(", ")
     end
@@ -70,6 +70,13 @@ class MyAmazon
   def ask(asin)
     # asin in log
     return @@log[asin] if @@log[asin] != nil
+
+    # invalid asin?
+    if asin.index("-") == nil
+      aasin = asin
+    else
+      aasin = asin.split("-")[1]
+    end
 
     # init item info.
     item = Hash.new
@@ -84,7 +91,7 @@ class MyAmazon
     w_sec = 10
     while true
       begin
-        res = Amazon::Ecs.item_lookup(asin, { :response_group => 'Medium', :country => 'jp' })
+        res = Amazon::Ecs.item_lookup(aasin, { :response_group => 'Medium', :country => 'jp' })
       rescue
         # wait w_sec if fail
         w_sec *= (n_try += 1)
@@ -129,5 +136,19 @@ class MyAmazon
     end
     backup
     n
+  end
+
+  #### update
+  def update
+    asins = []
+    @@log.keys.each do |asin|
+      asins.push(asin) if @@log[asin]['title'] == 'NULL'
+    end
+
+    puts "#{asins.size} NULL items"
+    asins.each do |asin|
+      @@log.delete(asin)
+    end
+    ask_asins(asins)
   end
 end

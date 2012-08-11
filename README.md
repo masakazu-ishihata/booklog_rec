@@ -36,11 +36,16 @@ Amazon API を利用し、商品の asin から商品情報を取得。
 3. date
 4. url
 
-過去に取得した情報を myamazon.log に吐き出すことで amazon に再問い合わせすることを回避。  
+過去に取得した情報を amazon.db に吐き出すことで amazon に再問い合わせすることを回避。  
 （api 制限があるのでできるだけ問い合わせ回数を節約したい。）  
 また、api 制限に引っかかった場合は数秒待って再取得する。  
 待ち時間は失敗するごとに増加（上限1時間）する。  
 bot に積むようなので気長に待ってね。  
+
+#### ask_asins(asins)
+asins 中の asin を ask する。  
+すべての ask が終了したときに amazon.db に log を吐き出す。  
+IOの負荷が減るのでこちらを使うことを推奨。
 
 #### history
 過去に取得した商品情報を格納したハッシュを返す。
@@ -54,6 +59,9 @@ asin を過去に取得していれば真、そうでなければ偽を返す。
 #### backup
 これまでに取得した商品情報を myamazon.log に書きだす。  
 backup しなかった取得情報は破棄される。
+
+#### update
+amazon.db 内の NULL 項目を再問い合わせする。
 
 ***
 
@@ -140,14 +148,19 @@ MyBooklog クラスを定義。
 
 ### メソッド一覧
 #### update
-フォローしているユーザの蔵書情報を更新する。
+フォローしているユーザの蔵書情報を更新する。  
+ユーザのTwitter ID もしくは booklog ID が削除されていれば、アンフォローし、データベースから削除。  
+データベースの整合性を取る。
 
-#### user?(tw_user)
-(tw_user, @uh[tw_user]) が有効なら真、そうでなければ偽を返す。  
-(tw_user, bl_user) が有効であるとは以下を満たすことを言う。
 
-- tw_user が Twitter id である。
-- bl_user が booklog id である。
+#### tw_user?(tw_user)
+tw_user が Twitter id なら真、そうでなければ偽を返す。  
+クラスメソッド。  
+ただし API 制限の関係で使いものにならないことがしばしば。
+
+#### bl_user?(bl_user)
+bl_user が booklog id なら真、そうでなければ偽を返す。  
+クラスメソッド。
 
 #### follow_new_users(num)
 booklog のレビュー tweet を num 件取得し、まだフォローしていないユーザをフォローする。  
@@ -181,11 +194,7 @@ tw_user をフォローする。
 #### search_users(num)
 booklog のレビュー tweet を num 件取得し、そこからフォローしていないユーザを探す。
 
-#### MyBooklog.search_bl_user(tw_user)
-tw_user の過去のツイートより、対応する booklog id を取得する。  
-クラスメソッド。
-
-#### MyBooklog.tweet2users(tw)
+#### MyBooklog.tweet2user(tweet)
 tweet tw から tw_user と bl_user を取り出す。
 クラスメソッド。
 

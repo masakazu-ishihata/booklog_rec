@@ -136,41 +136,94 @@ class MyBooklog
     users = @uh.keys.sort             # users in user hash
     flgs = MyTwitter.new.followings   # users in following
 
-    # re-load all users in uh
+    puts "uh = #{users.size}"
+    puts "db = #{@db.keys.size}"
+    puts "fg = #{flgs.size}"
+
+    #### following but not in uh --> unfollow ####
+    puts "Update followings"
+    flgs.each do |tw_user|
+      if @uh[tw_user] == nil
+        puts "#{tw_user} is not in uh."
+        MyTwitter.new.unfollow(tw_user)
+      end
+    end
+
+    #### users in uh but not following ####
+    puts "Update uh keys"
+    users.each do |tw_user|
+      if flgs.index(tw_user) == nil
+        puts "#{tw_user} is not in following."
+        @uh.delete(tw_user)
+      end
+    end
+    users = @uh.keys.sort
+    export_uh
+
+    #### users in db but not uh ####
+    puts "Update db keys"
+    h = Hash.new(nil)
+    users.each do |tw_user|
+      h[@uh[tw_user]] = tw_user
+    end
+    (@db.keys - h.keys).each do |bl_user|
+      puts "#{bl_user} is not in uh."
+      @db.delete(bl_user)
+    end
+
+    #### update amazon ####
+    puts "Update amazon database"
+    MyAmazon.new.update
+
+    #### update users ####
+    puts "Update bookshelf"
     for i in 0..users.size-1
       tw_user = users[i]
       bl_user = @uh[tw_user]
+      puts "update #{tw_user} = #{bl_user} (#{i+1}/#{users.size})"
 
+      # update
       t1 = Time.now
-      if user?(tw_user)
-        # reload if tw_user is a valid id
-        puts "update #{tw_user} (#{i+1}/#{users.size})"
-        remove_user(tw_user) if !load_user(bl_user)
-      else
-        # remove if tw_user is an invalid id
+
+      # tw_user is not in following
+      if flgs.index(tw_user) == nil
+        @uh.delete(tw_user)
+        @db.delete(bl_user)
+        export_uh
+        export_db
+
+      # tw_user is valid but bl_user is invalid
+      elsif !MyBooklog.bl_user?(bl_user)
         remove_user(tw_user)
+
+      # a valid user
+      else
+        load_user(bl_user)
       end
       t2 = Time.now
-
-      # wait for safe
-      sec = 10.3 - (t2-t1)
-      sleep(sec) if sec > 0
     end
+
+    # for safe
+    export_uh
     export_db
   end
 
-  #### user? ####
-  def user?(tw_user)
-    # tw_user is not a user of Twitter
-    return false if !MyTwitter.new.user?(tw_user)
+  #### tw_user? ####
+  def MyBooklog.tw_user?(tw_user)
+    MyTwitter.new.user?(tw_user)
+  end
 
-    # bl_user is not a user of Booklog
-    bl_user = @uh[tw_user]
-
+  #### bl_user? ####
+  def MyBooklog.bl_user?(bl_user)
     # try to open bl_user's page
     url  = "http://api.booklog.jp/users/#{bl_user}"
-    open(url) rescue return false
-    return true
+    begin
+      open(url)
+    rescue
+      return false
+    else
+      return true
+    end
   end
 
   ########################################
@@ -186,6 +239,10 @@ class MyBooklog
     users.each do |tw_user, bl_user|
       add_user(tw_user, bl_user)
     end
+
+    # for safe
+    export_uh
+    export_db
   end
 
   #### unfollow users
@@ -196,8 +253,11 @@ class MyBooklog
     #### unfollow users who do not follow me ####
     users[0..num-1].each do |tw_user, bl_user|
       remove_user(tw_user)
-      sleep(10.3) # for safe
     end
+
+    # for safe
+    export_uh
+    export_db
   end
 
   #### add a new user
@@ -259,15 +319,9 @@ class MyBooklog
       db["books"].each do |book|
         # registrate to @db
         asin = book["asin"]
-
-        if asin.index("-") != nil
-          @db[bl_user].delete(asin)
-          asin = asin.split("-")[1]
-        end
-
         rank = book["rank"].to_i
-        asins.push(asin) if !am.asked?(asin) && rank == 5
         @db[bl_user][asin] = rank
+        asins.push(asin) if !am.asked?(asin) && rank == 5
       end
 
       # break if thare is no book

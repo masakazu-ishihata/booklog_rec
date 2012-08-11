@@ -22,7 +22,7 @@ end
 ################################################################################
 class MyRecommender
   def initialize
-    import_uh  # @uh[tw_user] = bl_user
+    import_uh  # @uh[bl_user] = tw_user <- note that!
     import_db  # @db[user][asin] = rank
     import_dat # @n[0][user id] = user name, @n[1][book id] = asin
                # @z[0][user id] = class id, @z[1][book id] = class id
@@ -32,14 +32,19 @@ class MyRecommender
     # hisitory
     @his = Hash.new
 
-    # ask items in @n[1] and those ranked 5 star
+    am = MyAmazon.new
     asins = []
+    # ranked 5
     @db.keys.each do |user|
       @db[user].keys do |asin|
-        asins.push(asin) if @db[user][asin] == 5
+        asins.push(asin) if @db[user][asin] == 5 && !am.asked?(asin)
       end
     end
-    MyAmazon.new.ask_asins(@n[1] + asins)
+    # candidates
+    @n[1].each do |asin|
+      asins.push(asin) if !am.asked?(asin)
+    end
+    am.ask_asins(asins) if asins.size > 0
   end
 
   ########################################
@@ -51,8 +56,9 @@ class MyRecommender
     @uh = Hash.new
     open("userlist.db").read.split("\n").each do |line|
       ary = line.split(" ")
-      @uh[ ary[0] ] = ary[1]
+      @uh[ ary[1] ] = ary[0]
     end
+    puts "userlist.db is imported. (#{@uh.size} users)"
   end
 
   # import database
@@ -63,6 +69,7 @@ class MyRecommender
       @db[user] = Hash.new(nil) if @db[user] == nil
       @db[user][asin] = rank
     end
+    puts "rank.db is imported."
   end
 
   # import dat files
@@ -218,15 +225,23 @@ class MyRecommender
       can = books - @db[un].keys
 
       # redo if no cnadidate
-      redo if can == []
+      redo if (can-@his.keys) == []
 
       # grouping
       bg = grouping(can)
 
-      # chose a groop
-      key = bg.keys.choice
-      b = bg[key].sort{ |a, b| a["date"] <=> b["date"] }[0]
-      asin = b["asin"]
+      # chose an item
+      begin
+        key = bg.keys.choice
+        items = bg[key].sort{ |a, b| a["date"] <=> b["date"] }
+        puts "key = #{key} (#{items.size} items)"
+        for i in 0..items.size-1
+          asin = items[i]["asin"]
+          break if @his[asin] == nil
+        end
+        break if @his[asin] == nil
+        bg.delete(key)
+      end while bg.size > 0
 
       # already recommended?
       redo if @his[asin] != nil
