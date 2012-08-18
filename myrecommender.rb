@@ -167,14 +167,13 @@ class MyRecommender
       #### get tw_user ####
       bl_user   = @n[0][ui]
       tw_user   = @uh[bl_user]
-      tw_user   = ". @" + tw_user if flr.index(tw_user) != nil
 
       #### recommendation for ####
       asin = get_recommend_for(ui)
       title     = am.ask(asin)["title"]
       long_url  = am.ask(asin)["url"]
       short_url = bl.shorten(long_url)
-      text = "#{tw_user} さんへおすすめ：#{title} #{short_url} #booklog"
+      text = ". @#{tw_user} さんへおすすめ：#{title} #{short_url} #booklog"
       tw.post(text)
 
       #### recommendation from ####
@@ -183,7 +182,7 @@ class MyRecommender
       title     = am.ask(asin)["title"]
       long_url  = am.ask(asin)["url"]
       short_url = bl.shorten(long_url)
-      text = "#{tw_user} さんの☆５：#{title} #{short_url} #booklog"
+      text = ". @#{tw_user} さんの☆５：#{title} #{short_url} #booklog"
       tw.post(text)
     end
   end
@@ -234,7 +233,6 @@ class MyRecommender
       begin
         key = bg.keys.choice
         items = bg[key].sort{ |a, b| a["date"] <=> b["date"] }
-        puts "key = #{key} (#{items.size} items)"
         for i in 0..items.size-1
           asin = items[i]["asin"]
           break if @his[asin] == nil

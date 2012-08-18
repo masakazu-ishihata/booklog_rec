@@ -64,12 +64,12 @@ class MyTwitter
 
   #### followers ####
   def followers
-    ids2names( Twitter.follower_ids(@user, options={})["ids"] )
+    ids2names( Twitter.follower_ids(@user).attrs[:ids] )
   end
 
   #### followings ####
   def followings
-    ids2names( Twitter.friend_ids(@user, options={})["ids"] )
+    ids2names( Twitter.friend_ids(@user).attrs[:ids] )
   end
 
   #### follow ####

@@ -3,9 +3,11 @@
 ################################################################################
 # require
 ################################################################################
-require 'json'
+#require "net/http"
 require 'open-uri'
-require 'nkf'
+require "cgi"
+require "nkf"
+require "json"
 
 ################################################################################
 # My Bitly
@@ -22,16 +24,17 @@ class MyBitly
   #### shorten ####
   def shorten(long_url)
     # make a query
-    query = "longUrl=#{CGI.escape(NKF.nkf("-w -m0", long_url))}&login=#{@account}&apiKey=#{@api_key}"
+    query = "login=#{@account}&apiKey=#{@api_key}"
+    query += "&longUrl=#{CGI.escape(NKF.nkf("-w -m0", long_url))}"
+
     # get short url
     n_try = 0
     w_sec = 10
     begin
-      # request to bitly api
-      response = Net::HTTP.get("api.bit.ly", "/v3/shorten?#{query}")
-      data = JSON.parse(response)
-
       begin
+        # request to bitly api
+        response = Net::HTTP.get("api.bit.ly", "/v3/shorten?#{query}")
+        data = JSON.parse(response)
         short_url = data["data"]["url"]
       rescue
         # wait w_sec if fail
@@ -41,6 +44,8 @@ class MyBitly
         puts "wait #{w_sec} sec (#{Time.now})"
         sleep(w_sec)
       end
+
+      sleep(1) # wait for safe
     end while short_url == ""
 
     # return the result
