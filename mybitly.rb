@@ -3,8 +3,8 @@
 ################################################################################
 # require
 ################################################################################
-#require "net/http"
-require 'open-uri'
+require "net/http"
+#require 'open-uri'
 require "cgi"
 require "nkf"
 require "json"
@@ -38,6 +38,7 @@ class MyBitly
         short_url = data["data"]["url"]
       rescue
         # wait w_sec if fail
+        puts "status = #{data["status_txt"]}"
         short_url = ""
         w_sec *= (n_try += 1)
         w_sec = 3600 if w_sec > 3600
@@ -45,7 +46,7 @@ class MyBitly
         sleep(w_sec)
       end
 
-      sleep(1) # wait for safe
+      sleep(0) # wait for safe
     end while short_url == ""
 
     # return the result

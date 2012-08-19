@@ -32,19 +32,8 @@ class MyTwitter
     ary = []
     for i in 1..10 # max = 1000
       break if num <= 0
-      ary += Twitter.search(query, {:rpp => num, :page => i})
+      ary += Twitter.search(query, {:rpp => num, :page => i}).map{|res| res.attrs}
       num -= 100
-    end
-    ary
-  end
-
-  #### timeline ####
-  def timeline(num)
-    ary = []
-    for i in 1..5 # max = 1000
-      break if num <= 0
-      ary += Twitter.user_timeline(@user, {:count => num, :page => i})
-      num -= 200
     end
     ary
   end
@@ -64,12 +53,12 @@ class MyTwitter
 
   #### followers ####
   def followers
-    ids2names( Twitter.follower_ids(@user).attrs[:ids] )
+    ids2names( Twitter.follower_ids(@user).attrs['ids'] )
   end
 
   #### followings ####
   def followings
-    ids2names( Twitter.friend_ids(@user).attrs[:ids] )
+    ids2names( Twitter.friend_ids(@user).attrs['ids'] )
   end
 
   #### follow ####

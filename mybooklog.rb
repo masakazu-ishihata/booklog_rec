@@ -415,7 +415,7 @@ class MyBooklog
 
       # show tweet
       puts "---- check #{tw_user}'s tweet ----"
-      puts "#{tweet.text.gsub(/\n/,"")}"
+      puts "#{tweet['text'].gsub(/\n/,"")}"
       puts " -> #{tw_user} #{bl_user}"
       users[tw_user] = bl_user
     end
@@ -424,14 +424,15 @@ class MyBooklog
 
   #### tweet to users ####
   def MyBooklog.tweet2user(tweet)
-    return nil if tweet.to_user != nil # tweet is not a original
+    return nil if tweet['to_user'] != nil # tweet is not a original
 
-    tw_user = tweet.from_user
+    tw_user = tweet['from_user']
     bl_user = nil
+    text = tweet['text']
 
     #### registrat user if corresponding booklog user is found ####
-    if tweet.text.index("http:") != nil
-      url = tweet.text.gsub(/\n/, " ").gsub(/^..*http/,"http").split(/[ 　]/)[0]
+    if text.index("http:") != nil
+      url = text.gsub(/\n/, " ").gsub(/^..*http/,"http").split(/[ 　]/)[0]
       open(url).read.split("\n").each do |line|
         if line.index(/property=\"og:url\"/) != nil && line.index(/users\//) != nil
           bl_user = line.gsub(/^.*users\//,"").gsub(/\/.*$/, "").gsub(/\n/,"")
