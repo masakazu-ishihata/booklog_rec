@@ -172,18 +172,22 @@ class MyRecommender
       asin = get_recommend_for(ui)
       title     = am.ask(asin)["title"]
       long_url  = am.ask(asin)["url"]
-      short_url = bl.shorten(long_url)
-      text = ". @#{tw_user} さんへおすすめ：#{title} #{short_url} #booklog"
-      tw.post(text)
+      if long_url != "NULL"
+        short_url = bl.shorten(long_url)
+        text = ". @#{tw_user} さんへおすすめ：#{title} #{short_url} #booklog"
+        tw.post(text)
+      end
 
       #### recommendation from ####
       asin = get_recommend_from(ui)
       next if asin == nil
       title     = am.ask(asin)["title"]
       long_url  = am.ask(asin)["url"]
-      short_url = bl.shorten(long_url)
-      text = ". @#{tw_user} さんの☆５：#{title} #{short_url} #booklog"
-      tw.post(text)
+      if long_url != "NULL"
+        short_url = bl.shorten(long_url)
+        text = ". @#{tw_user} さんの☆５：#{title} #{short_url} #booklog"
+        tw.post(text)
+      end
     end
   end
 

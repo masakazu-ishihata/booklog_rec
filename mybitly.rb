@@ -38,7 +38,10 @@ class MyBitly
         short_url = data["data"]["url"]
       rescue
         # wait w_sec if fail
-        puts "status = #{data["status_txt"]}"
+        puts "status = #{data["status_txt"]} (#{data["status_code"]})"
+        if data["status_code"].to_i == 500
+          puts "long_url = #{long_url}"
+        end
         short_url = ""
         w_sec *= (n_try += 1)
         w_sec = 3600 if w_sec > 3600

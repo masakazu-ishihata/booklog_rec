@@ -35,7 +35,7 @@ class MyAmazon
         asin = h["asin"]
         @@log[asin] = h if @@log[asin] == nil
       end
-      puts "amazon.db is loaded."
+      puts "amazon.db is loaded. (#{@@log.size})"
     end
   end
 
@@ -128,6 +128,8 @@ class MyAmazon
   #### ask_asins ####
   def ask_asins(asins)
     return 0 if asins.size == 0
+    puts "#{asins.size} items will be asked."
+
     n = 0
     asins.each do |asin|
       next if @@log[asin] != nil
