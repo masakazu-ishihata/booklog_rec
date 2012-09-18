@@ -27,7 +27,7 @@ OptionParser.new { |opts|
   }
   #### export dat files ####
   opts.on("--export", "export database with thresould n"){
-    MyBooklog.new.export_dat(@n)
+    MyBooklog.new.export_dat(@n, @m)
   }
   #### follow users who tweet with #booklog ####
   opts.on("--follow", "follow users found from recent n tweets with #booklog"){

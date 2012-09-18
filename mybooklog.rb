@@ -70,7 +70,7 @@ class MyBooklog
     puts "rank.db is exported."
   end
   # export dat files
-  def export_dat(threshold)
+  def export_dat(_n, _m)
     #### count # reference of all books ####
     books = Hash.new(0) # books[asin] = count
     @db.keys.each do |user|
@@ -83,25 +83,25 @@ class MyBooklog
     bid = Hash.new # bid[asin] = id,  bid.keys \subseteq books.keys
     open("books.dat", "w") do |f|
       books.keys.sort.each do |asin|
-        if books[asin] >= threshold
+        if books[asin] >= _n
           bid[asin] = bid.size
           f.puts "#{bid[asin]} #{asin} #{books[asin]}"
         end
       end
     end
-    puts "books.dat is exported."
+    puts "books.dat is exported. (#{bid.size} books which appear > #{_n} times)"
 
     #### export as tuples [uid user #books] ####
     uid = Hash.new # uid[user] = id
     f = open("users.dat", "w")
     @db.keys.each do |user|
-      if bid.keys & @db[user].keys != []
+      if (bid.keys & @db[user].keys).size > bid.size * (_m / 1000.0)
         uid[user] = uid.size
         f.puts "#{uid[user]} #{user} #{@db[user].size}"
       end
     end
     f.close
-    puts "users.dat is exported."
+    puts "users.dat is exported. (#{uid.size} users who has > #{bid.size * (_m / 1000.0)} books)"
 
     #### export as tuples [uid bid val] ####
     f = open("ranks.dat", "w")
@@ -111,8 +111,8 @@ class MyBooklog
     f.puts "2"       # # values 0:not high 1:high
     @db.keys.each do |user|
       @db[user].keys.each do |asin|
-        u = uid[user]
-        b = bid[asin]
+        next if (u = uid[user]) == nil
+        next if (b = bid[asin]) == nil
         r = @db[user][asin].to_i
         #
         if 0 <= r && r <= 3
@@ -121,7 +121,7 @@ class MyBooklog
           r = 1 # high
         end
         #
-        f.printf("%s %s %s\n", u, b, r) if b != nil
+        f.printf("%s %s %s\n", u, b, r)
       end
     end
     f.close
@@ -173,7 +173,7 @@ class MyBooklog
 
     #### update amazon ####
     puts "Update amazon database"
-    MyAmazon.new.update
+#    MyAmazon.new.update
 
     #### update users ####
     puts "Update bookshelf"
