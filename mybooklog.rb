@@ -36,7 +36,7 @@ class MyBooklog
       ary = line.split(" ")
       @uh[ ary[0] ] = ary[1]
     end
-    puts "userlist.db is imported."
+    puts "userlist.db is imported. (#{@uh.keys.size})"
   end
   def import_db
     # data base : user, asin -> rank
@@ -45,7 +45,7 @@ class MyBooklog
       @db[user] = Hash.new(nil) if @db[user] == nil
       @db[user][asin] = rank
     end
-    puts "rank.db is imported."
+    puts "rank.db is imported. (#{@db.keys.size})"
   end
 
   #### exporters ####
@@ -132,7 +132,7 @@ class MyBooklog
   # update
   ########################################
   #### update ####
-  def update
+  def consistent
     users = @uh.keys.sort             # users in user hash
     flgs = MyTwitter.new.followings   # users in following
 
@@ -140,21 +140,29 @@ class MyBooklog
     puts "db = #{@db.keys.size}"
     puts "fg = #{flgs.size}"
 
-    #### following but not in uh --> unfollow ####
+    #### following but not in uh/db --> unfollow ####
     puts "Update followings"
     flgs.each do |tw_user|
-      if @uh[tw_user] == nil
-        puts "#{tw_user} is not in uh."
+      bl_user = @uh[tw_user]
+
+      if bl_user == nil  # following but not in uh
+        puts "#{tw_user} is not in uh/db."
         MyTwitter.new.unfollow(tw_user)
+        @uh.delete(tw_user)
+        @db.delete(bl_user)
+      elsif @db[bl_user] == nil # follwoing & in uh but not in db
+        load_user(bl_user)
       end
     end
 
     #### users in uh but not following ####
     puts "Update uh keys"
     users.each do |tw_user|
+      bl_user = @uh[tw_user]
       if flgs.index(tw_user) == nil
         puts "#{tw_user} is not in following."
         @uh.delete(tw_user)
+        @db.delete(bl_user)
       end
     end
     users = @uh.keys.sort
@@ -164,7 +172,8 @@ class MyBooklog
     puts "Update db keys"
     h = Hash.new(nil)
     users.each do |tw_user|
-      h[@uh[tw_user]] = tw_user
+      bl_user = @uh[tw_user]
+      h[bl_user] = tw_user
     end
     (@db.keys - h.keys).each do |bl_user|
       puts "#{bl_user} is not in uh."
@@ -172,8 +181,18 @@ class MyBooklog
     end
 
     #### update amazon ####
-    puts "Update amazon database"
+#    puts "Update amazon database"
 #    MyAmazon.new.update
+  end
+
+  #### update ####
+  def update
+    # consistent
+    consistent
+
+    # load
+    users = @uh.keys.sort             # users in user hash
+    flgs = MyTwitter.new.followings   # users in following
 
     #### update users ####
     puts "Update bookshelf"
@@ -247,6 +266,11 @@ class MyBooklog
 
   #### unfollow users
   def unfollow_users(num)
+    # consistent
+    consistent
+
+    return nil if num <= 0
+
     # get num non-friend users
     users = @uh.to_a.sort{|a,b| @db[a[1]].size <=> @db[b[1]].size}
 

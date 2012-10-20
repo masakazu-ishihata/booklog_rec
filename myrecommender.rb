@@ -95,8 +95,8 @@ class MyRecommender
         @c[i][c].push(j)
       end
     end
-    puts "# user clasters =  #{@c[0].size}"
-    puts "# book clasters =  #{@c[1].size}"
+    puts "# user clusters =  #{@c[0].size}"
+    puts "# book clusters =  #{@c[1].size}"
 
     # @d[user class id][book class id] = probability
     @d = Hash.new(nil)

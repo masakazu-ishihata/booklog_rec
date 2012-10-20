@@ -9,7 +9,8 @@
 4. おすすめ tweet 生成。
 
 なお、おすすめ計算のメインは C で書いているので割愛。(気が向いたら公開予定。)  
-また実際に post するには別のプログラムを使っていますが、それは重要でないので割愛。
+また実際に post するには別のプログラムを使っていますが、それは重要でないので割愛。  
+以下のドキュメントは主要メソッドのみ解説しています。
 
 [booklog_rec]: http://twitter.com/booklog_rec "Twitter: booklog_rec"
 [booklog]: http://booklog.jp "booklog"
@@ -59,9 +60,6 @@ asin を過去に取得していれば真、そうでなければ偽を返す。
 #### backup
 これまでに取得した商品情報を myamazon.log に書きだす。  
 backup しなかった取得情報は破棄される。
-
-#### update
-amazon.db 内の NULL 項目を再問い合わせする。
 
 ***
 
@@ -122,9 +120,6 @@ user (screen name) を follow する。
 #### unfollow(user)
 user (screen name) を unfollow する。
 
-#### user?(user) ####
-user が存在するかどうか返す。
-
 #### friend?(user)
 自身と user (screen name) が相互フォローならば真、そうでなければ偽を返す。
 
@@ -151,7 +146,6 @@ MyBooklog クラスを定義。
 フォローしているユーザの蔵書情報を更新する。  
 ユーザのTwitter ID もしくは booklog ID が削除されていれば、アンフォローし、データベースから削除。  
 データベースの整合性を取る。
-
 
 #### tw_user?(tw_user)
 tw_user が Twitter id なら真、そうでなければ偽を返す。  
@@ -182,14 +176,6 @@ bl_user の蔵書情報を取得する。
 
 #### follow_user(tw_user)
 tw_user をフォローする。
-
-#### MyBooklog.get_release(day, category, th)
-発売日が day, 分類が category かつ　booklog での登録ユーザが th 以上のアイテムを取得する。  
-クラスメソッド。
-
-#### post_release(n, m)
-発売日が n 日後の m 人以上に登録されているアイテムを post する。  
-実際に post するのではなく、topost.txt に追加する。
 
 #### search_users(num)
 booklog のレビュー tweet を num 件取得し、そこからフォローしていないユーザを探す。
@@ -235,3 +221,12 @@ asin 集合 asins をいくつかのグループに分割する。
 詳しくは以下を実行。
 
     ./main.rb --help
+
+
+*** 
+
+## プレゼンテーション
+
+大学の学園祭で利用したスライド
+
+<iframe src="http://www.slideshare.net/slideshow/embed_code/14646232" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="http://www.slideshare.net/masakazuishihata/ishihata-koudaisai121006forpdf" title="機械学習でお小遣いを稼ぐ！ - 本推薦 Twitter bot の紹介 -" target="_blank">機械学習でお小遣いを稼ぐ！ - 本推薦 Twitter bot の紹介 -</a> </strong> from <strong><a href="http://www.slideshare.net/masakazuishihata" target="_blank">Masakazu Ishihata</a></strong> </div>
