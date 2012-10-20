@@ -15,6 +15,15 @@
 [booklog_rec]: http://twitter.com/booklog_rec "Twitter: booklog_rec"
 [booklog]: http://booklog.jp "booklog"
 
+***
+
+# プレゼンテーション
+
+大学の学園祭で利用したスライド
+
+<iframe src="http://www.slideshare.net/slideshow/embed_code/14646232" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="http://www.slideshare.net/masakazuishihata/ishihata-koudaisai121006forpdf" title="機械学習でお小遣いを稼ぐ！ - 本推薦 Twitter bot の紹介 -" target="_blank">機械学習でお小遣いを稼ぐ！ - 本推薦 Twitter bot の紹介 -</a> </strong> from <strong><a href="http://www.slideshare.net/masakazuishihata" target="_blank">Masakazu Ishihata</a></strong> </div>
+
+***
 
 # Programs
 
@@ -223,10 +232,3 @@ asin 集合 asins をいくつかのグループに分割する。
     ./main.rb --help
 
 
-*** 
-
-## プレゼンテーション
-
-大学の学園祭で利用したスライド
-
-<iframe src="http://www.slideshare.net/slideshow/embed_code/14646232" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="http://www.slideshare.net/masakazuishihata/ishihata-koudaisai121006forpdf" title="機械学習でお小遣いを稼ぐ！ - 本推薦 Twitter bot の紹介 -" target="_blank">機械学習でお小遣いを稼ぐ！ - 本推薦 Twitter bot の紹介 -</a> </strong> from <strong><a href="http://www.slideshare.net/masakazuishihata" target="_blank">Masakazu Ishihata</a></strong> </div>
